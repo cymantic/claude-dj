@@ -1,0 +1,30 @@
+{
+  "suggestionMode": "pool",
+
+  "pools": {
+    "git_push": [
+      "Push It Salt-N-Pepa",
+      "Eye of the Tiger Survivor",
+      "Shipping Up To Boston Dropkick Murphys",
+      "Song 2 Blur",
+      "Lose Yourself Eminem"
+    ],
+    "victory": [
+      "We Are The Champions Queen",
+      "Celebration Kool and the Gang",
+      "Don't Stop Me Now Queen",
+      "Thunder Imagine Dragons",
+      "Beautiful Day U2"
+    ],
+    "chill": [
+      "Clair de Lune Debussy",
+      "Weightless Marconi Union",
+      "Teardrop Massive Attack"
+    ],
+    "focus": [
+      "Experience Ludovico Einaudi",
+      "Time Hans Zimmer",
+      "Intro The xx"
+    ]
+  }
+}

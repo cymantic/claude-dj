@@ -4,6 +4,8 @@ import { z } from "zod";
 import * as spotify from "./spotify.js";
 import * as tracklist from "./tracklist.js";
 import * as snippet from "./snippet.js";
+import { loadConfig, pickFromPool } from "./config.js";
+import { suggestSong } from "./suggest.js";
 
 // Validated schemas to prevent injection and abuse
 const QuerySchema = z.string()
@@ -53,6 +55,49 @@ server.tool(
           text: `Now playing: "${track}" by ${artist}`,
         },
       ],
+    };
+  }
+);
+
+server.tool(
+  "play_for_context",
+  "Play a snippet for a mood/event context — uses configured pool or Claude AI to pick the song",
+  {
+    context: ContextSchema,
+    hint: z.string().max(300).optional().describe("What just happened, e.g. commit message or test output — used by Claude mode to pick a fitting song"),
+    duration_seconds: z.number().min(5).max(120).default(20).describe("Snippet length in seconds (default 20)"),
+  },
+  async ({ context, hint, duration_seconds }) => {
+    const duration = duration_seconds ?? 20;
+    const config = loadConfig();
+    const trackList = tracklist.loadTrackList();
+
+    let query: string;
+    let source: string;
+
+    if (config.suggestionMode === "claude") {
+      try {
+        query = await suggestSong(context, hint ?? "");
+        source = "claude";
+      } catch {
+        query = pickFromPool(config.pools, context);
+        source = "pool (claude unavailable)";
+      }
+    } else {
+      query = pickFromPool(config.pools, context);
+      source = "pool";
+    }
+
+    await spotify.searchAndPlay(query);
+    const status = await spotify.getStatus();
+    tracklist.recordPlay(trackList, context, status.track, status.artist, status.uri);
+    snippet.startSnippet(status.uri, context, duration);
+
+    return {
+      content: [{
+        type: "text" as const,
+        text: `Playing snippet: "${status.track}" by ${status.artist} [${source}: ${query}] - fades in ${duration}s`,
+      }],
     };
   }
 );
