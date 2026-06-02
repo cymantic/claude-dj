@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "spotify": {
+      "command": "node",
+      "args": ["/Users/tgmcmillen/.claude-spotify/server/dist/index.js"]
+    }
+  }
+}
