@@ -15,5 +15,18 @@
   },
   "enabledMcpjsonServers": [
     "spotify"
-  ]
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude-spotify/hooks/post-bash.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

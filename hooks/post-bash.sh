@@ -1,41 +1,40 @@
 #!/bin/bash
 set -euo pipefail
 
-# Post-bash hook for automatic music triggers
-# Receives tool output - sanitize before use
+# PostToolUse hook — receives JSON via stdin from Claude Code
+# Schema: { "tool_name": "Bash", "tool_input": { "command": "..." }, "tool_response": { "output": "..." } }
 
-RESULT="${1:-}"
+INPUT=$(cat)
 
-# Sanitize input - remove non-printable characters
-RESULT=$(printf '%s' "$RESULT" | tr -cd '[:print:]\n')
-
-# Validate MCP server exists
 MCP_SERVER="$HOME/.claude-spotify/dist/index.js"
 if [[ ! -f "$MCP_SERVER" ]]; then
   exit 0
 fi
 
-# Check for git commit/push success (use printf, not echo)
-if printf '%s\n' "$RESULT" | grep -qE "git (commit|push)" && \
-   ! printf '%s\n' "$RESULT" | grep -qiE "error|failed|rejected|fatal"; then
+COMMAND=$(printf '%s' "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))" 2>/dev/null || true)
+OUTPUT=$(printf '%s' "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('tool_response',{}); print(r.get('output','') if isinstance(r,dict) else '')" 2>/dev/null || true)
+
+# git push/commit — play on success (no error/rejected in output)
+if printf '%s' "$COMMAND" | grep -qE "git (push|commit)" && \
+   ! printf '%s' "$OUTPUT" | grep -qiE "error|failed|rejected|fatal"; then
   node "$MCP_SERVER" <<'EOF' 2>/dev/null &
 {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"play_snippet","arguments":{"query":"Push It Salt-N-Pepa","context":"git_push","duration_seconds":20}}}
 EOF
   exit 0
 fi
 
-# Check for test success patterns
-if printf '%s\n' "$RESULT" | grep -qiE "passed|PASSED|✓|tests? (ok|passed)|All tests passed" && \
-   ! printf '%s\n' "$RESULT" | grep -qiE "failed|FAILED|✗|error"; then
+# Test suite passed
+if printf '%s' "$OUTPUT" | grep -qiE "passed|✓|tests? (ok|passed)|All tests passed" && \
+   ! printf '%s' "$OUTPUT" | grep -qiE "failed|✗|error"; then
   node "$MCP_SERVER" <<'EOF' 2>/dev/null &
 {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"play_snippet","arguments":{"query":"We Are The Champions Queen","context":"victory","duration_seconds":25}}}
 EOF
   exit 0
 fi
 
-# Check for build success
-if printf '%s\n' "$RESULT" | grep -qiE "build (succeeded|successful|complete)" && \
-   ! printf '%s\n' "$RESULT" | grep -qiE "error|failed"; then
+# Build success
+if printf '%s' "$OUTPUT" | grep -qiE "build (succeeded|successful|complete)" && \
+   ! printf '%s' "$OUTPUT" | grep -qiE "error|failed"; then
   node "$MCP_SERVER" <<'EOF' 2>/dev/null &
 {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"play_snippet","arguments":{"query":"celebration victory music","context":"victory","duration_seconds":20}}}
 EOF
