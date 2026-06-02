@@ -20,7 +20,7 @@ A Model Context Protocol server that lets Claude control Spotify with contextual
 ### 1. Clone and Build
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-spotify.git ~/.claude-spotify
+git clone https://github.com/cymantic/claude-dj.git ~/.claude-spotify
 cd ~/.claude-spotify
 npm install
 npm run build
@@ -189,7 +189,7 @@ For personal/team use, sharing one Client ID is fine.
 
 ```bash
 # Clone
-git clone https://github.com/YOUR_USERNAME/claude-spotify.git ~/.claude-spotify
+git clone https://github.com/cymantic/claude-dj.git ~/.claude-spotify
 cd ~/.claude-spotify
 
 # Build

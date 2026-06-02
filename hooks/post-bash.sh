@@ -10,7 +10,7 @@ RESULT="${1:-}"
 RESULT=$(printf '%s' "$RESULT" | tr -cd '[:print:]\n')
 
 # Validate MCP server exists
-MCP_SERVER="$HOME/.claude-spotify/server/dist/index.js"
+MCP_SERVER="$HOME/.claude-spotify/dist/index.js"
 if [[ ! -f "$MCP_SERVER" ]]; then
   exit 0
 fi

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__spotify__play_song",
+      "mcp__spotify__play_snippet",
+      "mcp__spotify__pause",
+      "mcp__spotify__resume",
+      "mcp__spotify__set_volume",
+      "mcp__spotify__get_status",
+      "mcp__spotify__thumbs_down",
+      "mcp__spotify__promote_track",
+      "mcp__spotify__cancel_snippet",
+      "mcp__spotify__get_moods"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "spotify"
+  ]
+}

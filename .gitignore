@@ -3,3 +3,4 @@ dist/
 tracklist.json
 tokens.json
 .env
+.claude/settings.local.json
