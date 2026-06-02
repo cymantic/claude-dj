@@ -68,27 +68,12 @@ server.tool(
   async ({ query, context, duration_seconds }) => {
     const duration = duration_seconds ?? 20;
     const trackList = tracklist.loadTrackList();
-    const knownTrack = tracklist.selectTrackForContext(trackList, context);
 
-    let track: string;
-    let artist: string;
-    let uri: string;
-    let source: string;
-
-    if (knownTrack) {
-      await spotify.playTrackByUri(knownTrack.uri);
-      track = knownTrack.track;
-      artist = knownTrack.artist;
-      uri = knownTrack.uri;
-      source = "known favorite";
-    } else {
-      await spotify.searchAndPlay(query);
-      const status = await spotify.getStatus();
-      track = status.track;
-      artist = status.artist;
-      uri = status.uri;
-      source = "fresh search";
-    }
+    await spotify.searchAndPlay(query);
+    const status = await spotify.getStatus();
+    const track = status.track;
+    const artist = status.artist;
+    const uri = status.uri;
 
     tracklist.recordPlay(trackList, context, track, artist, uri);
     snippet.startSnippet(uri, context, duration);
@@ -97,7 +82,7 @@ server.tool(
       content: [
         {
           type: "text" as const,
-          text: `Playing snippet: "${track}" by ${artist} (${source}) - will fade in ${duration}s`,
+          text: `Playing snippet: "${track}" by ${artist} - will fade in ${duration}s`,
         },
       ],
     };
