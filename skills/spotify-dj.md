@@ -55,10 +55,29 @@ Listen for these and respond:
 | "louder", "turn it up" | `set_volume(70)` or higher |
 | "quieter", "turn it down" | `set_volume(30)` or lower |
 
+## Song Lyric & Reference Detection
+
+If the user's message contains or echoes a song lyric, song title, or artist reference — even casually embedded in normal speech — treat it as a play request and search for it. Use `play_song` so it keeps going.
+
+Examples:
+| User says | Play |
+|-----------|------|
+| "feed the world" | "Do They Know It's Christmas - Band Aid" |
+| "don't stop me now" | "Don't Stop Me Now - Queen" |
+| "we will rock you" | "We Will Rock You - Queen" |
+| "push it real good" | "Push It - Salt-N-Pepa" |
+| "shake it off" | "Shake It Off - Taylor Swift" |
+| "let it go" | "Let It Go - Idina Menzel" |
+| "living on a prayer" | "Living on a Prayer - Bon Jovi" |
+| "all i want for christmas" | "All I Want For Christmas Is You - Mariah Carey" |
+
+Be generous — if it *might* be a lyric or song reference, assume it is and play it. The user can always say "enough".
+
 ## Rules
 
 1. **Snippets by default** - Use `play_snippet` for 15-30 second clips unless user wants more
-2. **Don't stack** - If music is playing, let it finish or be explicitly stopped
-3. **Just play** - Don't ask "would you like music?" - just play at the right moment
-4. **Match the energy** - Victory moments get upbeat tracks, focus time gets ambient
-5. **Learn preferences** - Tracks that aren't thumbs-downed become favorites over time
+2. **Lyrics = play_song** - When a lyric/song reference is detected, use `play_song` (no auto-stop)
+3. **Don't stack** - If music is playing, let it finish or be explicitly stopped
+4. **Just play** - Don't ask "would you like music?" - just play at the right moment
+5. **Match the energy** - Victory moments get upbeat tracks, focus time gets ambient
+6. **Learn preferences** - Tracks that aren't thumbs-downed become favorites over time
