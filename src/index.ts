@@ -44,16 +44,14 @@ server.tool(
     let source: string;
 
     if (knownTrack) {
-      spotify.playTrackByUri(knownTrack.uri);
+      await spotify.playTrackByUri(knownTrack.uri);
       track = knownTrack.track;
       artist = knownTrack.artist;
       uri = knownTrack.uri;
       source = "known favorite";
     } else {
-      spotify.searchAndPlay(query);
-      // Wait a moment for Spotify to start playing
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const status = spotify.getStatus();
+      await spotify.searchAndPlay(query);
+      const status = await spotify.getStatus();
       track = status.track;
       artist = status.artist;
       uri = status.uri;
@@ -92,15 +90,14 @@ server.tool(
     let source: string;
 
     if (knownTrack) {
-      spotify.playTrackByUri(knownTrack.uri);
+      await spotify.playTrackByUri(knownTrack.uri);
       track = knownTrack.track;
       artist = knownTrack.artist;
       uri = knownTrack.uri;
       source = "known favorite";
     } else {
-      spotify.searchAndPlay(query);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const status = spotify.getStatus();
+      await spotify.searchAndPlay(query);
+      const status = await spotify.getStatus();
       track = status.track;
       artist = status.artist;
       uri = status.uri;
@@ -194,7 +191,7 @@ server.tool(
     level: z.number().min(0).max(100).describe("Volume level from 0 to 100"),
   },
   async ({ level }) => {
-    const newLevel = spotify.setVolume(level);
+    const newLevel = await spotify.setVolume(level);
     return {
       content: [
         {
@@ -212,7 +209,7 @@ server.tool(
   {},
   async () => {
     snippet.cancelSnippet();
-    spotify.pause();
+    await spotify.pause();
     return {
       content: [
         {
@@ -257,7 +254,7 @@ server.tool(
   "Resume Spotify playback",
   {},
   async () => {
-    spotify.resume();
+    await spotify.resume();
     return {
       content: [
         {
@@ -274,7 +271,7 @@ server.tool(
   "Get current Spotify playback status",
   {},
   async () => {
-    const status = spotify.getStatus();
+    const status = await spotify.getStatus();
     return {
       content: [
         {

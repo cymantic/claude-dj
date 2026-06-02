@@ -1,9 +1,12 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import type { TrackList, Track, ContextData, CurrentTrack } from "./types.js";
 
-const TRACKLIST_PATH = join(homedir(), ".claude-spotify", "tracklist.json");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = join(__dirname, "..");
+const TRACKLIST_PATH = join(PROJECT_ROOT, "tracklist.json");
 
 function getEmptyTrackList(): TrackList {
   return { contexts: {}, currentTrack: null };

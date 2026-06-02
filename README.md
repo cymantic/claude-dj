@@ -1,135 +1,152 @@
-# Claude Spotify MCP Server
+# Spotify MCP Server for Claude Code
 
-An MCP (Model Context Protocol) server that lets Claude Code control Spotify with contextual, learning music playback.
+A Model Context Protocol server that lets Claude control Spotify with contextual music - plays snippets based on mood/events (victory, focus, git push) and learns your preferences over time.
 
 ## Features
 
-- **Contextual playlists** - Music learns your preferences by context (victory, chill, focus, git_push)
-- **Snippet playback** - Short 15-30 second clips that auto-fade, perfect for milestone moments
-- **Learning system** - Tracks that aren't thumbs-downed become favorites over time
-- **Mood detection** - Claude recognizes conversational patterns and plays appropriate music
-- **Auto-triggers** - Hooks can auto-play music on git commit, test pass, etc.
+- **Contextual music**: Plays appropriate music based on context (victory, chill, focus, etc.)
+- **Learning system**: Remembers tracks you like per context, avoids ones you block
+- **Snippets**: Plays short clips (15-30s) that auto-fade, perfect for coding celebrations
+- **No focus stealing**: Uses Spotify Web API so Spotify stays in background
 
-## Requirements
+## Prerequisites
 
-- macOS (uses AppleScript to control Spotify)
-- Spotify desktop app installed and running
 - Node.js 18+
-- Claude Code
+- Spotify Premium account (required for playback control)
+- Spotify app running on your computer
 
 ## Quick Start
 
-### 1. Clone and Install
+### 1. Clone and Build
 
 ```bash
-git clone <this-repo> ~/.claude-spotify
-cd ~/.claude-spotify
+git clone <this-repo> ~/Dev/claude-spotify
+cd ~/Dev/claude-spotify
 npm install
 npm run build
 ```
 
-### 2. Configure Claude Code
+### 2. Create Spotify Developer App
 
-Add to your project's `.mcp.json`:
+1. Go to https://developer.spotify.com/dashboard
+2. Click **Create app**
+3. Fill in:
+   - App name: `Claude DJ` (or anything)
+   - App description: anything
+   - Redirect URI: `http://127.0.0.1:8888/callback`
+4. Click **Save**
+5. Click **Settings** and copy the **Client ID**
+
+### 3. Authenticate
+
+```bash
+# Save your client ID (in repo root, gitignored)
+echo "SPOTIFY_CLIENT_ID=your_client_id_here" > .env
+
+# Run one-time auth (opens browser)
+npx ts-node src/auth.ts
+```
+
+This opens your browser for Spotify login. After authorizing, tokens are saved to `tokens.json` (gitignored) and auto-refresh.
+
+### 4. Add to Claude Code
+
+The `.mcp.json` is already in the repo. Update the path to match your system:
 
 ```json
 {
   "mcpServers": {
     "spotify": {
       "command": "node",
-      "args": ["~/.claude-spotify/dist/index.js"]
+      "args": ["/Users/YOUR_USERNAME/Dev/claude-spotify/dist/index.js"]
     }
   }
 }
 ```
 
-Or for global access, create `~/.mcp.json` with the same content.
+Or copy `.mcp.json` to any project where you want Spotify integration.
 
-### 3. Restart Claude Code
+### 5. Restart Claude Code
 
-Restart Claude Code to pick up the new MCP server. Approve the "spotify" server when prompted.
-
-### 4. Test It
-
-Say to Claude: "Play We Are the Champions for victory"
+Restart Claude Code to load the MCP server. Test with: "play me something uplifting"
 
 ## MCP Tools
 
 | Tool | Description |
 |------|-------------|
-| `play_song(query, context)` | Search and play full song |
-| `play_snippet(query, context, duration_seconds)` | Play short clip with auto-fade |
-| `pause()` | Pause playback |
-| `resume()` | Resume playback |
-| `cancel_snippet()` | Cancel auto-fade, let song continue |
-| `set_volume(level)` | Set volume 0-100 |
-| `get_status()` | Current track info |
-| `thumbs_down(reason)` | Block track for its context |
-| `promote_track(context, boost)` | Boost track for a mood |
-| `get_moods()` | List known contexts |
+| `play_song` | Search and play a song with context for learning |
+| `play_snippet` | Play a short clip that auto-fades (default 20s) |
+| `pause` | Pause playback |
+| `resume` | Resume playback |
+| `set_volume` | Set volume (0-100) |
+| `get_status` | Get current playback status |
+| `thumbs_down` | Block current track for its context |
+| `promote_track` | Boost current track for a context |
+| `cancel_snippet` | Cancel auto-fade, let song keep playing |
+| `get_moods` | List known contexts and track counts |
 
-## Companion Skill (Optional)
+## Optional: Companion Skill
 
-Copy `spotify-dj.md` to `~/.claude/skills/` to give Claude guidance on when and how to use the music tools contextually.
+Copy the skill to enable automatic mood detection:
 
-## Auto-Trigger Hooks (Optional)
-
-To auto-play music on git commits and test passes:
-
-1. Copy `hooks/post-bash.sh` to `~/.claude-spotify/hooks/`
-2. Make it executable: `chmod +x ~/.claude-spotify/hooks/post-bash.sh`
-3. Add to your project's `.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude-spotify/hooks/post-bash.sh \"$TOOL_OUTPUT\"",
-            "async": true
-          }
-        ]
-      }
-    ]
-  }
-}
+```bash
+mkdir -p ~/.claude/skills
+cp skills/spotify-dj.md ~/.claude/skills/
 ```
 
-## Data Storage
+## Optional: Auto-trigger Hooks
 
-Track preferences are stored in `~/.claude-spotify/tracklist.json`:
+The `hooks/` directory contains a post-bash hook that auto-plays music on git push, test pass, etc. Configure in your Claude Code settings if desired.
 
-```json
-{
-  "contexts": {
-    "victory": {
-      "good": [{"track": "We Are The Champions", "artist": "Queen", "playCount": 5}],
-      "blocked": []
-    }
-  }
-}
+## Troubleshooting
+
+**"No active Spotify device"**
+- Open Spotify desktop app and play any song briefly, then pause
+- This activates the device for API control
+
+**"Not authenticated"**
+- Run `npx ts-node src/auth.ts` from the repo root
+
+**"Token refresh failed"**
+- Your refresh token may have expired (rare)
+- Delete `tokens.json` and re-run auth script
+
+**Build errors**
+- Ensure Node 18+: `node --version`
+- Try `rm -rf node_modules && npm install`
+
+## Project Structure
+
+```
+claude-spotify/
+├── .env                 # SPOTIFY_CLIENT_ID (create this, gitignored)
+├── .mcp.json            # MCP server config for Claude Code
+├── tokens.json          # OAuth tokens (auto-created, gitignored)
+├── tracklist.json       # Learned preferences (auto-created, gitignored)
+├── src/
+│   ├── index.ts         # MCP server entry
+│   ├── spotify.ts       # Web API calls
+│   ├── auth.ts          # One-time auth script
+│   ├── tracklist.ts     # Learning/preferences
+│   ├── snippet.ts       # Auto-fade timer
+│   └── types.ts         # TypeScript types
+├── dist/                # Compiled JS (gitignored)
+├── skills/
+│   └── spotify-dj.md    # Claude skill for mood detection
+└── hooks/
+    └── post-bash.sh     # Optional auto-trigger hook
 ```
 
-## Security
+## Moving to Another Computer
 
-This project has been security reviewed. Key protections:
+1. Clone the repo
+2. `npm install && npm run build`
+3. Create `.env` with your `SPOTIFY_CLIENT_ID` (same one from developer.spotify.com)
+4. Run `npx ts-node src/auth.ts` to authenticate
+5. Update `.mcp.json` with the correct path for your system
+6. Restart Claude Code
 
-- **Input validation** - All MCP tool parameters validated with Zod schemas (length limits, character restrictions)
-- **AppleScript injection prevention** - Spotify URIs validated against strict regex, query strings sanitized
-- **Shell injection prevention** - Uses `execFileSync` with array arguments, hook scripts use heredocs instead of interpolation
-- **Sanitized hook input** - Hook scripts strip non-printable characters before processing
-- **Local-only** - No network calls, API keys, or OAuth - just controls local Spotify app
-- **Scoped storage** - All data in `~/.claude-spotify/`, file permissions are user-only
-
-### Limitations
-
-- macOS only (AppleScript)
-- Requires Spotify desktop app running
-- No rate limiting (relies on Claude's usage patterns)
+Your Spotify app credentials work across machines - you just need to re-authenticate once per machine.
 
 ## License
 
