@@ -36,27 +36,13 @@ server.tool(
   },
   async ({ query, context }) => {
     const trackList = tracklist.loadTrackList();
-    const knownTrack = tracklist.selectTrackForContext(trackList, context);
 
-    let track: string;
-    let artist: string;
-    let uri: string;
-    let source: string;
-
-    if (knownTrack) {
-      await spotify.playTrackByUri(knownTrack.uri);
-      track = knownTrack.track;
-      artist = knownTrack.artist;
-      uri = knownTrack.uri;
-      source = "known favorite";
-    } else {
-      await spotify.searchAndPlay(query);
-      const status = await spotify.getStatus();
-      track = status.track;
-      artist = status.artist;
-      uri = status.uri;
-      source = "fresh search";
-    }
+    // Always search by query — play_song is an explicit request, not ambient
+    await spotify.searchAndPlay(query);
+    const status = await spotify.getStatus();
+    const track = status.track;
+    const artist = status.artist;
+    const uri = status.uri;
 
     tracklist.recordPlay(trackList, context, track, artist, uri);
 
@@ -64,7 +50,7 @@ server.tool(
       content: [
         {
           type: "text" as const,
-          text: `Now playing: "${track}" by ${artist} (${source})`,
+          text: `Now playing: "${track}" by ${artist}`,
         },
       ],
     };

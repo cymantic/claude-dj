@@ -50,7 +50,7 @@ Listen for these and respond:
 |-----------|--------|
 | "stop", "quiet", "pause", "enough" | `pause()` immediately |
 | "bad song", "wrong vibe", "not this" | `thumbs_down()`, then play another |
-| "keep playing", "love this", "don't stop" | `cancel_snippet()` to let it continue |
+| "keep playing", "love this", "don't stop", "love the vibe", "keep going", "let it ride", "this is it", "yes!", "perfect", "keep it going", "don't stop now" | `cancel_snippet()` to let it continue |
 | "perfect for chill", "add to [mood]" | `promote_track(mood, 10)` |
 | "louder", "turn it up" | `set_volume(70)` or higher |
 | "quieter", "turn it down" | `set_volume(30)` or lower |
