@@ -71,8 +71,11 @@ Add to your **global** MCP config so it works in every project:
 
 ```bash
 mkdir -p ~/.claude/skills
-cp ~/.claude-spotify/skills/spotify-dj.md ~/.claude/skills/
+ln -s ~/.claude-spotify/skills/spotify-dj ~/.claude/skills/spotify-dj
 ```
+
+The symlink keeps the installed skill in step with the repo, and Claude Code loads it whenever the Spotify tools are
+available.
 
 This teaches Claude when to play music, how to detect song lyrics in conversation, and how to respond to "keep it going", "bad song", etc.
 
@@ -208,7 +211,7 @@ Check path in `~/.claude/mcp.json`. Ensure `dist/` exists: `ls ~/.claude-spotify
 │   └── types.ts                  # TypeScript types
 ├── dist/                         # Compiled JS (run npm run build)
 ├── skills/
-│   └── spotify-dj.md             # Claude skill: mood detection + lyric triggers
+│   └── spotify-dj/SKILL.md       # Claude skill: mood detection + lyric triggers
 └── hooks/
     └── post-bash.sh              # PostToolUse hook: auto-trigger on git/test/build
 ```
